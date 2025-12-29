@@ -43,6 +43,10 @@ export class Player {
     ) {
       this.playerGraphics.x = nextX;
       this.playerGraphics.y = nextY;
+
+      // Update gameState with current player position so enemies can track it
+      this.gameState.playerX = nextX;
+      this.gameState.playerY = nextY;
     }
   }
 }

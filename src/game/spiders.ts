@@ -1,7 +1,7 @@
 import { Graphics } from 'pixi.js';
 
 import { GameState } from './gameState';
-import { PositionWithDirection } from './types';
+import { Direction, PositionWithDirection } from './types';
 
 export class SpiderGraphic extends Graphics {
   public readonly id: string;
@@ -46,7 +46,7 @@ export class Spiders {
         const newPos = { x: spiderGraphic.x, y: spiderGraphic.y - speed };
 
         if (this.gameState.checkWallCollisionSpider(newPos.x, newPos.y) || this.gameState.isOutOfBounds(newPos)) {
-          spiderPosition!.direction = 'S';
+          spiderPosition!.direction = Direction.S;
 
           spiderGraphic.x = newPos.x;
           spiderGraphic.y = spiderGraphic.y + speed;
@@ -65,7 +65,7 @@ export class Spiders {
         const newPos = { x: spiderGraphic.x, y: spiderGraphic.y + speed };
 
         if (this.gameState.checkWallCollisionSpider(newPos.x, newPos.y) || this.gameState.isOutOfBounds(newPos)) {
-          spiderPosition!.direction = 'N';
+          spiderPosition!.direction = Direction.N;
 
           spiderGraphic.x = newPos.x;
           spiderGraphic.y = spiderGraphic.y - speed;
@@ -84,7 +84,7 @@ export class Spiders {
         const newPos = { x: spiderGraphic.x + speed, y: spiderGraphic.y };
 
         if (this.gameState.checkWallCollisionSpider(newPos.x, newPos.y) || this.gameState.isOutOfBounds(newPos)) {
-          spiderPosition!.direction = 'W';
+          spiderPosition!.direction = Direction.W;
 
           spiderGraphic.x = newPos.x - speed;
           spiderGraphic.y = newPos.y;
@@ -103,7 +103,7 @@ export class Spiders {
         const newPos = { x: spiderGraphic.x - speed, y: spiderGraphic.y };
 
         if (this.gameState.checkWallCollisionSpider(newPos.x, newPos.y) || this.gameState.isOutOfBounds(newPos)) {
-          spiderPosition!.direction = 'E';
+          spiderPosition!.direction = Direction.E;
 
           spiderGraphic.x = newPos.x + speed;
           spiderGraphic.y = newPos.y;

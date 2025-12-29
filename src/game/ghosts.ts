@@ -1,7 +1,7 @@
 import { Graphics } from 'pixi.js';
 
 import { GameState } from './gameState';
-import { PositionWithDirection } from './types';
+import { Direction, PositionWithDirection } from './types';
 
 export class GhostGraphic extends Graphics {
   public readonly id: string;
@@ -46,7 +46,7 @@ export class Ghosts {
         const newPos = { x: ghostGraphic.x, y: ghostGraphic.y - speed };
 
         if (this.gameState.isOutOfBounds(newPos)) {
-          ghostPositions!.direction = 'S';
+          ghostPositions!.direction = Direction.S;
 
           ghostGraphic.x = newPos.x;
           ghostGraphic.y = ghostGraphic.y + speed;
@@ -65,7 +65,7 @@ export class Ghosts {
         const newPos = { x: ghostGraphic.x, y: ghostGraphic.y + speed };
 
         if (this.gameState.isOutOfBounds(newPos)) {
-          ghostPositions!.direction = 'N';
+          ghostPositions!.direction = Direction.N;
 
           ghostGraphic.x = newPos.x;
           ghostGraphic.y = ghostGraphic.y - speed;
@@ -84,7 +84,7 @@ export class Ghosts {
         const newPos = { x: ghostGraphic.x + speed, y: ghostGraphic.y };
 
         if (this.gameState.isOutOfBounds(newPos)) {
-          ghostPositions!.direction = 'W';
+          ghostPositions!.direction = Direction.W;
 
           ghostGraphic.x = newPos.x - speed;
           ghostGraphic.y = newPos.y;
@@ -103,7 +103,7 @@ export class Ghosts {
         const newPos = { x: ghostGraphic.x - speed, y: ghostGraphic.y };
 
         if (this.gameState.isOutOfBounds(newPos)) {
-          ghostPositions!.direction = 'E';
+          ghostPositions!.direction = Direction.E;
 
           ghostGraphic.x = newPos.x + speed;
           ghostGraphic.y = newPos.y;

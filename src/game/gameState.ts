@@ -1,5 +1,5 @@
 import { Application, EventEmitter, Rectangle } from 'pixi.js';
-import { Position, PositionWithDirection } from './types';
+import { Direction, Position, PositionWithDirection } from './types';
 import { getRandomInt } from './util';
 
 interface Props {
@@ -28,8 +28,10 @@ export class GameState {
   public readonly spiderSize: number = 16;
   public readonly ghostSizeW: number = 20;
   public readonly ghostSizeL: number = 30;
+  public readonly batSize: number = 14;
   public readonly maxSpiders: number = 20;
   public readonly maxGhosts: number = 10;
+  public readonly maxBats: number = 15;
   public readonly monsterSize: number = 25; // Define monster size
   public readonly maxMonsters: number = 5;
 
@@ -37,10 +39,11 @@ export class GameState {
 
   public spiderPositions: PositionWithDirection[] = [];
   public ghostPositions: PositionWithDirection[] = [];
+  public batPositions: PositionWithDirection[] = [];
   public monsterPositions: PositionWithDirection[] = []; // Add monsterPositions
 
   public keys: { [key: string]: boolean } = {};
-  public speed: number = 5;
+  public speed: number = 2;
 
   public gameEnded: boolean = false;
   public worldStopped: boolean = false;
@@ -62,6 +65,7 @@ export class GameState {
     this.assignWallPositions();
     this.assignSpiderPositions();
     this.assignGhostPositions();
+    this.assignBatPositions();
     this.assignMonsterPositions();
 
     this.eventEmitter.addListener('gameEnded', () => this.endGame());
@@ -90,7 +94,7 @@ export class GameState {
               id: self.crypto.randomUUID(),
               x: x * this.gridSize,
               y: y * this.gridSize,
-              direction: ['N', 'E', 'W', 'S'][getRandomInt(4)] as 'N' | 'E' | 'W' | 'S',
+              direction: [Direction.E, Direction.N, Direction.S, Direction.W][getRandomInt(4)],
             };
             this.spiderPositions.push(spider);
             count += 1;
@@ -111,9 +115,30 @@ export class GameState {
               id: self.crypto.randomUUID(),
               x: x * this.gridSize,
               y: y * this.gridSize,
-              direction: ['N', 'E', 'W', 'S'][getRandomInt(4)] as 'N' | 'E' | 'W' | 'S',
+              direction: [Direction.E, Direction.N, Direction.S, Direction.W][getRandomInt(4)],
             };
             this.ghostPositions.push(spider);
+            count += 1;
+          }
+        }
+      }
+    }
+  }
+
+  private assignBatPositions() {
+    let count = 0;
+
+    for (let x = 0; x < this.noOfCols; x++) {
+      for (let y = 0; y < this.noOfRows; y++) {
+        if (Math.random() < 0.06 && x > 2 && y > 2 && !this.hasWall({ x, y })) {
+          if (count < this.maxBats) {
+            const bat = {
+              id: self.crypto.randomUUID(),
+              x: x * this.gridSize,
+              y: y * this.gridSize,
+              direction: [Direction.E, Direction.N, Direction.S, Direction.W][getRandomInt(4)],
+            };
+            this.batPositions.push(bat);
             count += 1;
           }
         }
@@ -132,7 +157,7 @@ export class GameState {
               id: self.crypto.randomUUID(),
               x: x * this.gridSize,
               y: y * this.gridSize,
-              direction: ['N', 'E', 'W', 'S'][getRandomInt(4)] as 'N' | 'E' | 'W' | 'S',
+              direction: [Direction.E, Direction.N, Direction.S, Direction.W][getRandomInt(4)],
             };
             this.monsterPositions.push(monster);
             count += 1;
@@ -169,8 +194,17 @@ export class GameState {
     });
   }
 
+  public checkWallCollisionBat(x: number, y: number): boolean {
+    const batBounds = new Rectangle(x, y, this.batSize, this.batSize).getBounds();
+
+    return this.walls.some((wall) => {
+      const wallBounds = new Rectangle(wall.x, wall.y, this.gridSize, this.gridSize).getBounds();
+      return batBounds.intersects(wallBounds);
+    });
+  }
+
   public isOutOfBounds(pos: Position): boolean {
-    return pos.x < 2 || pos.y < 2 || pos.x + 2 > this.width || pos.y + 2 > this.height;
+    return pos.x < 0 || pos.y < 0 || pos.x > this.width || pos.y > this.height;
   }
 
   private hasWall(pos: Position) {

@@ -6,6 +6,7 @@ import { Player } from './player';
 import { Walls } from './walls';
 import { Spiders } from './spiders';
 import { Ghosts } from './ghosts';
+import { Bats } from './bats';
 import { Monsters } from './monsters';
 
 export class MainGameScene extends Container implements GameScene {
@@ -14,6 +15,7 @@ export class MainGameScene extends Container implements GameScene {
   public player: Player | null = null;
   public spiders: Spiders | null = null;
   public ghosts: Ghosts | null = null;
+  public bats: Bats | null = null;
   public monsters: Monsters | null = null; // Add monsters property
 
   constructor(gameState: GameState) {
@@ -30,6 +32,9 @@ export class MainGameScene extends Container implements GameScene {
 
     this.ghosts = new Ghosts(this.gameState);
     this.ghosts.init();
+
+    this.bats = new Bats(this.gameState);
+    this.bats.init();
 
     this.monsters = new Monsters(this.gameState);
     this.monsters.init();
@@ -50,6 +55,7 @@ export class MainGameScene extends Container implements GameScene {
       this.player?.update();
       this.spiders?.update();
       this.ghosts?.update();
+      this.bats?.update();
       this.monsters?.update();
     }
   }

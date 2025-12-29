@@ -39,6 +39,84 @@ export class Monsters {
     });
   }
 
+  private isValidPosition(x: number, y: number): boolean {
+    // Check bounds with monster size in mind
+    const size = this.gameState.monsterSize;
+    if (x < 0 || y < 0 || x + size > this.gameState.width || y + size > this.gameState.height) {
+      return false;
+    }
+
+    // Check wall collision
+    if (this.gameState.checkWallCollisionMonster(x, y, size)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  private findBestMove(
+    monsterX: number,
+    monsterY: number,
+    playerX: number,
+    playerY: number,
+    speed: number
+  ): { x: number; y: number } {
+    // Calculate direct path to player
+    const dx = playerX - monsterX;
+    const dy = playerY - monsterY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance === 0) return { x: monsterX, y: monsterY };
+
+    const moveX = (dx / distance) * speed;
+    const moveY = (dy / distance) * speed;
+
+    // Try direct path first
+    const newX = monsterX + moveX;
+    const newY = monsterY + moveY;
+
+    if (this.isValidPosition(newX, newY)) {
+      return { x: newX, y: newY };
+    }
+
+    // If blocked, try alternative directions
+    // Generate candidate moves: cardinal and diagonal directions
+    const candidates = [
+      { moveX: speed, moveY: 0 }, // Right
+      { moveX: -speed, moveY: 0 }, // Left
+      { moveX: 0, moveY: speed }, // Down
+      { moveX: 0, moveY: -speed }, // Up
+      { moveX: speed * 0.7, moveY: speed * 0.7 }, // Down-Right
+      { moveX: speed * 0.7, moveY: -speed * 0.7 }, // Up-Right
+      { moveX: -speed * 0.7, moveY: speed * 0.7 }, // Down-Left
+      { moveX: -speed * 0.7, moveY: -speed * 0.7 }, // Up-Left
+    ];
+
+    let bestMove: { x: number; y: number } | null = null;
+    let bestDistance = Infinity;
+
+    for (const candidate of candidates) {
+      const candidateX = monsterX + candidate.moveX;
+      const candidateY = monsterY + candidate.moveY;
+
+      if (this.isValidPosition(candidateX, candidateY)) {
+        // Calculate distance to player from this position
+        const newDx = playerX - candidateX;
+        const newDy = playerY - candidateY;
+        const newDistance = Math.sqrt(newDx * newDx + newDy * newDy);
+
+        // Take the move that gets us closest to the player
+        if (newDistance < bestDistance) {
+          bestDistance = newDistance;
+          bestMove = { x: candidateX, y: candidateY };
+        }
+      }
+    }
+
+    // If we found any valid move, use it; otherwise stay put
+    return bestMove || { x: monsterX, y: monsterY };
+  }
+
   public update() {
     const speed = this.gameState.speed / 10; // Slower than other enemies
 
@@ -46,44 +124,19 @@ export class Monsters {
       const monsterPosition = this.gameState.monsterPositions.find((m) => m.id === monsterGraphic.id);
       if (!monsterPosition) return; // Should not happen, but just in case
 
-      // Calculate direction towards the player
       const playerX = this.gameState.playerX;
       const playerY = this.gameState.playerY;
 
-      const dx = playerX - monsterGraphic.x;
-      const dy = playerY - monsterGraphic.y;
+      // Find the best move towards the player, navigating around obstacles
+      const newPosition = this.findBestMove(monsterGraphic.x, monsterGraphic.y, playerX, playerY, speed);
 
-      const distance = Math.sqrt(dx * dx + dy * dy); // TODO: Change this find diection to take
+      // Update monster position
+      monsterGraphic.x = newPosition.x;
+      monsterGraphic.y = newPosition.y;
 
-      if (distance > 0) {
-        const moveX = (dx / distance) * speed;
-        const moveY = (dy / distance) * speed;
-
-        let newX = monsterGraphic.x + moveX;
-        let newY = monsterGraphic.y + moveY;
-
-        //----------------------------
-        // TODO: Monsters should in general move towards the player,
-        // if they hit a wall, they should try other directions
-        //----------------------------
-
-        // Check for wall collisions
-        if (
-          this.gameState.checkWallCollisionMonster(newX, newY, this.gameState.monsterSize) ||
-          this.gameState.isOutOfBounds({ x: newX, y: newY })
-        ) {
-          newX = monsterGraphic.x - moveX;
-          newY = monsterGraphic.y - moveY;
-        } else {
-          // No collision, move freely
-          monsterGraphic.x = newX;
-          monsterGraphic.y = newY;
-        }
-
-        // Update monster position in gameState
-        monsterPosition.x = monsterGraphic.x;
-        monsterPosition.y = monsterGraphic.y;
-      }
+      // Update monster position in gameState
+      monsterPosition.x = monsterGraphic.x;
+      monsterPosition.y = monsterGraphic.y;
     });
   }
 }
